@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Webapi\Model\Rest\Config" >
+        <plugin name="superWebapiSecurity" type="Superb\WebapiSecurity\Plugin\Magento\Webapi\Rest\Model\Config" sortOrder="9999"/>
+    </type>
+    <type name="Magento\Webapi\Controller\Rest\SchemaRequestProcessor">
+        <plugin name="superWebapiSecurity" type="Superb\WebapiSecurity\Plugin\Magento\Webapi\Controller\Rest\SchemaRequestProcessor" sortOrder="9999"/>
+    </type>
+    <type name="Magento\WebapiAsync\Controller\Rest\AsynchronousSchemaRequestProcessor">
+        <plugin name="superWebapiSecurity" type="Superb\WebapiSecurity\Plugin\Magento\Webapi\Controller\Rest\SchemaRequestProcessor" sortOrder="9999"/>
+    </type>
+    <type name="Magento\Webapi\Controller\Soap">
+        <plugin name="superWebapiSecurity" type="Superb\WebapiSecurity\Plugin\Magento\Webapi\Controller\Soap" sortOrder="9999"/>
+    </type>
+    <type name="Magento\GraphQl\Controller\GraphQl">
+        <plugin name="superWebapiSecurity" type="Superb\WebapiSecurity\Plugin\Magento\GraphQl\Controller\GraphQl" sortOrder="9999"/>
+    </type>
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="superb:webapi-security:rest-service-list" xsi:type="object">Superb\WebapiSecurity\Console\RestServiceList</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
