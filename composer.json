@@ -5,9 +5,9 @@
   "license": "proprietary",
   "config": {},
   "require": {
-    "magento/module-graph-ql": ">=100.3.* <=100.4.*",
-    "magento/module-webapi": ">=100.3.* <=100.4.*",
-    "magento/module-webapi-async": ">=100.3.* <=100.4.*"
+    "magento/module-graph-ql": ">=100.3 <=100.4",
+     "magento/module-webapi": ">=100.3 <=100.4",
+    "magento/module-webapi-async": ">=100.3 <=100.4"
   },
   "autoload": {
     "files": [
