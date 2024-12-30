@@ -247,6 +247,9 @@ class Data
                 'POST',
                 'PUT',
                 'DELETE'
+            ],
+            'V1/customers/isEmailAvailable' => [
+                'POST',
             ]
         ];
     }
