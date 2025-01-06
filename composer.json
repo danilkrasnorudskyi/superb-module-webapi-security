@@ -4,7 +4,7 @@
     "type": "magento2-module",
     "license": "proprietary",
     "config": {},
-    "version": "1.0.0",
+    "version": "1.0.2",
     "require": {
         "magento/module-graph-ql": ">=100.3 <=100.5",
         "magento/module-webapi": ">=100.3 <=100.5",
