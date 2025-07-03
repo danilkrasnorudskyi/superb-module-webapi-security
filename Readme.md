@@ -1,5 +1,7 @@
 [![Latest Stable Version](https://poser.pugx.org/superb-code/module-webapi-security/v/stable)](https://packagist.org/packages/superb-code/module-webapi-security)
 [![Total Downloads](https://poser.pugx.org/superb-code/module-webapi-security/downloads)](https://packagist.org/packages/superb-code/module-webapi-security)
+[![Total Install](https://poser.pugx.org/superb-code/module-webapi-security/installs)](https://packagist.org/packages/superb-code/module-webapi-security)
+
 
 ### Install via composer (recommend)
 
