@@ -8,6 +8,8 @@ use Magento\Framework\View\Element\AbstractBlock;
  * Textarea column for dynamic rows
  *
  * @method $this setName(string $name)
+ * @method $this setId(string $id)
+ * @method string|null getId()
  * @method string|null getName()
  * @method string|null getRows()
  * @method string|null getStyle()

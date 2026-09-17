@@ -28,6 +28,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>When enabled only the paths listed below are routable. V1/guest-carts, V1/carts/mine and V1/customers/isEmailAvailable are always allowed.</comment>
                 </field>
+                <field id="log_blocked_requests" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Log Blocked Requests</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Writes method, path, IP and User-Agent of every rejected request to var/log/superb-webapi-security.log.</comment>
+                </field>
                 <field id="allowed_rest_path" translate="label comment" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Allowed REST Paths</label>
                     <frontend_model>Superb\WebapiSecurity\Block\Adminhtml\System\Config\Form\AllowedRestPath</frontend_model>

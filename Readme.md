@@ -10,6 +10,8 @@ Settings live in **Stores > Configuration > Security > Web API Security** (globa
 6. Conditionally Allowed REST Paths - `superb/webapi_security/conditionally_allowed_rest_path` (path prefix + methods + IP/CIDR list + User-Agent list)
 7. Whitelists - `superb/webapi_security/whitelists` (named IP/CIDR or User-Agent lists)
 
+8. Log Blocked Requests - `superb/webapi_security/log_blocked_requests`
+
 `V1/guest-carts`, `V1/carts/mine` and `V1/customers/isEmailAvailable` are always allowed when the filter is on.
 
 IP/CIDR, User-Agent and whitelist values are separated by commas or new lines. An IP/CIDR or User-Agent
@@ -21,9 +23,20 @@ The array fields are stored as JSON (`Magento\Config\Model\Config\Backend\Serial
 {"row1":{"path":"V1/klaviyo/reclaim","methods":["GET","POST"],"ip":"klaviyo_ip_whitelist, 192.168.127.12","user_agent":"Klaviyo"}}
 ```
 
+## Logging
+
+With **Log Blocked Requests** on, every rejected request (REST path filtered out, disabled SOAP/GraphQL/schema)
+is written to `var/log/superb-webapi-security.log`:
+
+```
+[2026-09-17T12:00:00.000000+00:00] webapi_security.WARNING: blocked rest POST /V1/products {"ip":"203.0.113.7","user_agent":"curl/8.4"} []
+```
+
+Use it to decide whether to add an allowed/conditional path for a legitimate client or to ban the IP upstream.
+
 ## Migrating from env.php
 
-Versions before 1.1.0 read the same paths from the `superb/webapi_security` array in `app/etc/env.php`.
+Versions before 2.0.0 read the same paths from the `superb/webapi_security` array in `app/etc/env.php`.
 Copy them into store config once, then remove the block from `env.php`:
 
 ```bash

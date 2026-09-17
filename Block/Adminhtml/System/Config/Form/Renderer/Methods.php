@@ -10,6 +10,7 @@ use Superb\WebapiSecurity\Model\Config\Source\HttpMethod;
  * HTTP method multiselect column for dynamic rows
  *
  * @method $this setName(string $name)
+ * @method $this setExtraParams(string $params)
  */
 class Methods extends Select
 {

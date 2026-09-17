@@ -18,6 +18,6 @@ class Config
 
     public function afterGetRestRoutes(RestConfig $restConfig, array $routes, Request $request)
     {
-        return $this->helper->filterRoutes($routes, $request->getHttpMethod());
+        return $this->helper->filterRoutes($routes, $request->getHttpMethod(), $request);
     }
 }

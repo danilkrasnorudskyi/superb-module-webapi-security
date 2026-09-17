@@ -20,6 +20,7 @@ class SchemaRequestProcessor
         $request
     ) {
         if ($this->helper->isSchemaRequestProcessorDisabled()) {
+            $this->helper->logBlocked('schema', $request->getHttpMethod(), $request->getPathInfo());
             throw new \Magento\Framework\Webapi\Exception(
                 __('Request does not match any route.'),
                 0,

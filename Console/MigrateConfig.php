@@ -26,6 +26,7 @@ class MigrateConfig extends Command
         Data::SOAP_API_DISABLED,
         Data::GRAPHQL_DISABLED,
         Data::REST_PATH_FILTER_ENABLED,
+        Data::LOG_BLOCKED_REQUESTS,
     ];
 
     protected $deploymentConfig;

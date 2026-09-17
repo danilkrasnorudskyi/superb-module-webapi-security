@@ -7,6 +7,7 @@
                 <soap_api_disabled>0</soap_api_disabled>
                 <graphql_disabled>0</graphql_disabled>
                 <rest_path_filter_enabled>0</rest_path_filter_enabled>
+                <log_blocked_requests>0</log_blocked_requests>
                 <allowed_rest_path/>
                 <conditionally_allowed_rest_path/>
                 <whitelists/>
