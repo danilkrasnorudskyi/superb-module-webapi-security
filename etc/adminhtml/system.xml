@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="security" translate="label" sortOrder="200">
+            <label>Security</label>
+        </tab>
+        <section id="superb" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+            <label>Web API Security</label>
+            <tab>security</tab>
+            <resource>Superb_WebapiSecurity::config</resource>
+            <group id="webapi_security" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Web API Security</label>
+                <field id="schema_request_processor_disabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Disable Schema Generation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Returns 404 for /rest/*/schema requests.</comment>
+                </field>
+                <field id="soap_api_disabled" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Disable SOAP API</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="graphql_disabled" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Disable GraphQL API</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="rest_path_filter_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable REST Path Filter</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>When enabled only the paths listed below are routable. V1/guest-carts, V1/carts/mine and V1/customers/isEmailAvailable are always allowed.</comment>
+                </field>
+                <field id="allowed_rest_path" translate="label comment" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Allowed REST Paths</label>
+                    <frontend_model>Superb\WebapiSecurity\Block\Adminhtml\System\Config\Form\AllowedRestPath</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>Path is matched as a prefix, e.g. "V1/stripe".</comment>
+                    <depends>
+                        <field id="rest_path_filter_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="conditionally_allowed_rest_path" translate="label comment" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Conditionally Allowed REST Paths</label>
+                    <frontend_model>Superb\WebapiSecurity\Block\Adminhtml\System\Config\Form\ConditionallyAllowedRestPath</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>Allowed when the client IP matches any IP/CIDR or the User-Agent contains any listed value. Separate values with commas or new lines; a value may also be a whitelist name from the list below.</comment>
+                    <depends>
+                        <field id="rest_path_filter_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="whitelists" translate="label comment" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Whitelists</label>
+                    <frontend_model>Superb\WebapiSecurity\Block\Adminhtml\System\Config\Form\Whitelists</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>Named lists of IP/CIDR or User-Agent values, referenced by name in the conditions above. Separate values with commas or new lines.</comment>
+                    <depends>
+                        <field id="rest_path_filter_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

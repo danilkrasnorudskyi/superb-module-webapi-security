@@ -49,7 +49,7 @@ class RestServiceList extends Command
             $spacer = str_repeat(' ', $strlen - strlen($methods) - 1);
             $output->writeln('<info>' . $methods . $spacer . ' - ' . $route . '</info>');
         }
-
+        return Command::SUCCESS;
     }
 
     /** * {@inheritdoc} */
