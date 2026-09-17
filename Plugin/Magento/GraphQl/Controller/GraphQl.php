@@ -21,6 +21,7 @@ class GraphQl
         $request
     ) {
         if ($this->helper->isGraphqlDisabled()) {
+            $this->helper->logBlocked('graphql', $request->getMethod(), $request->getPathInfo());
             throw new \Exception(
                 __('Request does not match any route.')
             );

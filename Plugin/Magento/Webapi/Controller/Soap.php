@@ -21,6 +21,7 @@ class Soap
         $request
     ) {
         if ($this->helper->isSoapApiDisabled()) {
+            $this->helper->logBlocked('soap', $request->getMethod(), $request->getPathInfo());
             throw new \Exception(
                 __('Request does not match any route.')
             );

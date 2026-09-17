@@ -15,6 +15,24 @@
     <type name="Magento\GraphQl\Controller\GraphQl">
         <plugin name="superWebapiSecurity" type="Superb\WebapiSecurity\Plugin\Magento\GraphQl\Controller\GraphQl" sortOrder="9999"/>
     </type>
+    <virtualType name="Superb\WebapiSecurity\Logger\Handler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/superb-webapi-security.log</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Superb\WebapiSecurity\Logger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="string">webapi_security</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Superb\WebapiSecurity\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Superb\WebapiSecurity\Helper\Data">
+        <arguments>
+            <argument name="logger" xsi:type="object">Superb\WebapiSecurity\Logger</argument>
+        </arguments>
+    </type>
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">

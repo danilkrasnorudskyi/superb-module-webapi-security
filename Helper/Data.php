@@ -6,6 +6,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\HTTP\Header;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\Webapi\Rest\Request as RestRequest;
+use Psr\Log\LoggerInterface;
 
 class Data
 {
@@ -16,6 +18,7 @@ class Data
     const ALLOWED_REST_PATH = 'superb/webapi_security/allowed_rest_path';
     const CONDITIONALLY_ALLOWED_REST_PATH = 'superb/webapi_security/conditionally_allowed_rest_path';
     const WHITELISTS = 'superb/webapi_security/whitelists';
+    const LOG_BLOCKED_REQUESTS = 'superb/webapi_security/log_blocked_requests';
     const IP_CONDITION = 'ip';
     const USER_AGENT_CONDITION = 'user_agent';
 
@@ -23,6 +26,7 @@ class Data
     protected $json;
     protected $remoteAddress;
     protected $httpHeader;
+    protected $logger;
 
     protected $allowedRestPath;
     protected $whitelists;
@@ -33,12 +37,14 @@ class Data
         ScopeConfigInterface $scopeConfig,
         Json $json,
         RemoteAddress $remoteAddress,
-        Header $httpHeader
+        Header $httpHeader,
+        LoggerInterface $logger
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->json = $json;
         $this->remoteAddress = $remoteAddress;
         $this->httpHeader = $httpHeader;
+        $this->logger = $logger;
     }
 
     public function isSchemaRequestProcessorDisabled()
@@ -56,23 +62,55 @@ class Data
         return $this->scopeConfig->isSetFlag(self::GRAPHQL_DISABLED);
     }
 
-    public function filterRoutes($routes, $httpMethod)
+    /**
+     * @param \Magento\Webapi\Controller\Rest\Router\Route[] $routes
+     * @param string $httpMethod
+     * @param RestRequest|null $request when given, a filtered-out route matching the request is logged as blocked
+     * @return \Magento\Webapi\Controller\Rest\Router\Route[]
+     */
+    public function filterRoutes($routes, $httpMethod, $request = null)
     {
         if (!$this->isRestPathFilterEnabled()) {
             return $routes;
         }
-        /** @var \Magento\Webapi\Controller\Rest\Router\Route $route */
         $newRoutes = [];
         $ip = $this->remoteAddress->getRemoteAddress();
         $userAgent = $this->httpHeader->getHttpUserAgent();
+        $blocked = false;
         foreach ($routes as $route) {
             if ($this->isPathAllowed($route->getRoutePath(), $httpMethod) ||
                 $this->isPathConditionallyAllowed($route->getRoutePath(), $httpMethod, $ip, $userAgent)
             ) {
                 $newRoutes[] = $route;
+            } elseif (!$blocked && $request instanceof RestRequest && $route->match($request) !== false) {
+                $blocked = true;
             }
         }
+        if ($blocked) {
+            $this->logBlocked('rest', $httpMethod, $request->getPathInfo());
+        }
         return $newRoutes;
+    }
+
+    /**
+     * Write a blocked request to var/log/superb-webapi-security.log with the data needed to whitelist or ban the client
+     *
+     * @param string $api rest|soap|graphql|schema
+     * @param string $method
+     * @param string $path
+     */
+    public function logBlocked($api, $method, $path)
+    {
+        if (!$this->scopeConfig->isSetFlag(self::LOG_BLOCKED_REQUESTS)) {
+            return;
+        }
+        $this->logger->warning(
+            sprintf('blocked %s %s %s', $api, strtoupper((string)$method), $path),
+            [
+                'ip' => $this->remoteAddress->getRemoteAddress(),
+                'user_agent' => $this->httpHeader->getHttpUserAgent(),
+            ]
+        );
     }
 
     protected function isRestPathFilterEnabled()
