@@ -1,4 +1,22 @@
+[![Latest Stable Version](https://poser.pugx.org/superb-code/module-webapi-security/v/stable)](https://packagist.org/packages/superb-code/module-webapi-security)
+[![Total Downloads](https://poser.pugx.org/superb-code/module-webapi-security/downloads)](https://packagist.org/packages/superb-code/module-webapi-security)
+[![License](https://poser.pugx.org/superb-code/module-webapi-security/license)](https://packagist.org/packages/superb-code/module-webapi-security)
+
 # Web API Security
+
+### Install via composer (recommend)
+
+Run the following command in Magento 2 root folder:
+
+```
+composer require superb-code/module-webapi-security
+php bin/magento setup:upgrade
+php bin/magento setup:static-content:deploy
+```
+
+------
+
+### Configuration
 
 Settings live in **Stores > Configuration > Security > Web API Security** (global scope).
 
