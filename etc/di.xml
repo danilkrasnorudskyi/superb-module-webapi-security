@@ -19,6 +19,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="superb:webapi-security:rest-service-list" xsi:type="object">Superb\WebapiSecurity\Console\RestServiceList</item>
+                <item name="superb:webapi-security:migrate-config" xsi:type="object">Superb\WebapiSecurity\Console\MigrateConfig</item>
             </argument>
         </arguments>
     </type>

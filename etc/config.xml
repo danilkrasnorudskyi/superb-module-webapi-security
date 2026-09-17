@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <superb>
+            <webapi_security>
+                <schema_request_processor_disabled>0</schema_request_processor_disabled>
+                <soap_api_disabled>0</soap_api_disabled>
+                <graphql_disabled>0</graphql_disabled>
+                <rest_path_filter_enabled>0</rest_path_filter_enabled>
+                <allowed_rest_path/>
+                <conditionally_allowed_rest_path/>
+                <whitelists/>
+            </webapi_security>
+        </superb>
+    </default>
+</config>

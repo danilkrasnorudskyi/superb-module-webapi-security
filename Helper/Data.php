@@ -2,9 +2,10 @@
 
 namespace Superb\WebapiSecurity\Helper;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\HTTP\Header;
-use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Framework\Serialize\Serializer\Json;
 
 class Data
 {
@@ -18,7 +19,8 @@ class Data
     const IP_CONDITION = 'ip';
     const USER_AGENT_CONDITION = 'user_agent';
 
-    protected $deploymentConfig;
+    protected $scopeConfig;
+    protected $json;
     protected $remoteAddress;
     protected $httpHeader;
 
@@ -28,29 +30,30 @@ class Data
     protected $allowedConiditions = [self::IP_CONDITION, self::USER_AGENT_CONDITION];
 
     public function __construct(
-        DeploymentConfig $deploymentConfig,
+        ScopeConfigInterface $scopeConfig,
+        Json $json,
         RemoteAddress $remoteAddress,
         Header $httpHeader
     ) {
-        $this->deploymentConfig = $deploymentConfig;
+        $this->scopeConfig = $scopeConfig;
+        $this->json = $json;
         $this->remoteAddress = $remoteAddress;
         $this->httpHeader = $httpHeader;
     }
 
     public function isSchemaRequestProcessorDisabled()
     {
-        return $this->deploymentConfig->get(self::SCHEMA_REQUEST_PROCESSOR_DISABLED);
+        return $this->scopeConfig->isSetFlag(self::SCHEMA_REQUEST_PROCESSOR_DISABLED);
     }
 
     public function isSoapApiDisabled()
     {
-        return $this->deploymentConfig->get(self::SOAP_API_DISABLED);
-
+        return $this->scopeConfig->isSetFlag(self::SOAP_API_DISABLED);
     }
 
     public function isGraphqlDisabled()
     {
-        return $this->deploymentConfig->get(self::GRAPHQL_DISABLED);
+        return $this->scopeConfig->isSetFlag(self::GRAPHQL_DISABLED);
     }
 
     public function filterRoutes($routes, $httpMethod)
@@ -74,21 +77,69 @@ class Data
 
     protected function isRestPathFilterEnabled()
     {
-        return $this->deploymentConfig->get(self::REST_PATH_FILTER_ENABLED);
+        return $this->scopeConfig->isSetFlag(self::REST_PATH_FILTER_ENABLED);
+    }
+
+    /**
+     * Rows of a serialized dynamic-rows config field
+     */
+    protected function getRows($path)
+    {
+        $value = $this->scopeConfig->getValue($path);
+        if (is_array($value)) {
+            return $value;
+        }
+        if (!is_string($value) || $value === '') {
+            return [];
+        }
+        try {
+            $rows = $this->json->unserialize($value);
+        } catch (\InvalidArgumentException $e) {
+            return [];
+        }
+        return is_array($rows) ? $rows : [];
+    }
+
+    /**
+     * Split a comma/newline separated string into trimmed non-empty items
+     */
+    protected function splitList($value)
+    {
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
+        $items = [];
+        foreach (preg_split('/[\s,]+/', (string)$value) as $item) {
+            if ($item !== '') {
+                $items[] = $item;
+            }
+        }
+        return $items;
+    }
+
+    protected function getMethods($value)
+    {
+        $methods = [];
+        foreach ($this->splitList($value) as $method) {
+            $methods[strtoupper($method)] = true;
+        }
+        return $methods;
     }
 
     protected function getAllowedRestPath()
     {
         if (null === $this->allowedRestPath) {
             $this->allowedRestPath = [];
-            $arr = $this->deploymentConfig->get(self::ALLOWED_REST_PATH, []);
-            $arr = array_merge($arr, $this->getAlwaysAllowed());
-            foreach ($arr as $route => $methods) {
-                if (is_array($methods)) {
-                    foreach ($methods as $method) {
-                        $this->allowedRestPath[$route][$method] = true;
-                    }
+            foreach ($this->getRows(self::ALLOWED_REST_PATH) as $row) {
+                $path = trim((string)($row['path'] ?? ''));
+                if ($path === '') {
+                    continue;
                 }
+                $this->allowedRestPath[$path] = ($this->allowedRestPath[$path] ?? [])
+                    + $this->getMethods($row['methods'] ?? []);
+            }
+            foreach ($this->getAlwaysAllowed() as $path => $methods) {
+                $this->allowedRestPath[$path] = ($this->allowedRestPath[$path] ?? []) + $this->getMethods($methods);
             }
         }
         return $this->allowedRestPath;
@@ -98,18 +149,11 @@ class Data
     {
         if (null === $this->whitelists) {
             $this->whitelists = [];
-            $arr = $this->deploymentConfig->get(self::WHITELISTS, []);
-            foreach ($arr as $name => $list) {
-                if (is_string($name) && is_array($list)) {
-                    $newList = [];
-                    foreach ($list as $item) {
-                        if (is_string($item)) {
-                            $newList[] = $item;
-                        }
-                    }
-                    if ($newList) {
-                        $this->whitelists[$name] = $newList;
-                    }
+            foreach ($this->getRows(self::WHITELISTS) as $row) {
+                $name = trim((string)($row['name'] ?? ''));
+                $values = $this->splitList($row['values'] ?? '');
+                if ($name !== '' && $values) {
+                    $this->whitelists[$name] = array_merge($this->whitelists[$name] ?? [], $values);
                 }
             }
         }
@@ -120,51 +164,36 @@ class Data
     {
         if (null === $this->conditinallyAllowedPath) {
             $this->conditinallyAllowedPath = [];
-            $arr = $this->deploymentConfig->get(self::CONDITIONALLY_ALLOWED_REST_PATH, []);
-            foreach ($arr as $route => $value) {
-                if (empty($value['methods']) ||
-                    empty($value['conditions']) ||
-                    !is_array($value['conditions'])
-                ) {
+            foreach ($this->getRows(self::CONDITIONALLY_ALLOWED_REST_PATH) as $row) {
+                $path = trim((string)($row['path'] ?? ''));
+                $methods = $this->getMethods($row['methods'] ?? []);
+                if ($path === '' || !$methods) {
                     continue;
                 }
-                $methods = [];
-                foreach ($value['methods'] as $method) {
-                    $methods[$method] = true;
-                }
-                $value['methods'] = $methods;
-
                 $conditions = [];
-                foreach ($value['conditions'] as $type => $conf) {
-                    if (!in_array($type, $this->allowedConiditions)) {
-                        continue;
-                    }
-                    $conditions[$type] = [];
-                    if (is_string($conf) && !empty($this->getWhitelists()[$conf])) {
-                        $conditions[$type] = $this->getWhitelists()[$conf];
-                    } elseif (is_array($conf)) {
-                        foreach ($conf as $item) {
-                            if (is_string($item)) {
-                                if (isset($this->getWhitelists()[$item])) {
-                                    $conditions[$type] = array_merge(
-                                        $conditions[$type],
-                                        $this->getWhitelists()[$item]
-                                    );
-                                } else {
-                                    $conditions[$type][] = $item;
-                                }
-                            }
+                foreach ($this->allowedConiditions as $type) {
+                    $values = [];
+                    // each item is either a whitelist name or a literal value
+                    foreach ($this->splitList($row[$type] ?? '') as $item) {
+                        if (isset($this->getWhitelists()[$item])) {
+                            $values = array_merge($values, $this->getWhitelists()[$item]);
+                        } else {
+                            $values[] = $item;
                         }
                     }
-                    if (empty($conditions[$type])) {
-                        unset($conditions[$type]);
+                    if ($values) {
+                        $conditions[$type] = $values;
                     }
                 }
-                if (empty($conditions)) {
+                if (!$conditions) {
                     continue;
                 }
-                $value['conditions'] = $conditions;
-                $this->conditinallyAllowedPath[$route] = $value;
+                // list, not keyed by path: the same path may have several rows with different conditions
+                $this->conditinallyAllowedPath[] = [
+                    'path' => $path,
+                    'methods' => $methods,
+                    'conditions' => $conditions,
+                ];
             }
         }
         return $this->conditinallyAllowedPath;
@@ -182,8 +211,8 @@ class Data
 
     public function isPathConditionallyAllowed($route, $method, $clientIp, $clientUserAgent)
     {
-        foreach ($this->getConditionallyAllowedRestPath() as $path => $config) {
-            if (!empty($config['methods'][$method]) && $this->isPathMatch($route, $path)) {
+        foreach ($this->getConditionallyAllowedRestPath() as $config) {
+            if (!empty($config['methods'][$method]) && $this->isPathMatch($route, $config['path'])) {
                 if (!empty($config['conditions'][self::IP_CONDITION]) && $clientIp) {
                     foreach ($config['conditions'][self::IP_CONDITION] as $cidr) {
                         if ($this->cidrMatch($clientIp, $cidr)) {
@@ -223,7 +252,10 @@ class Data
         }
         $ip = ip2long($ip);
         $subnet = ip2long($subnet);
-        $mask = -1 << (32 - $bits);
+        if ($ip === false || $subnet === false) {
+            return false;
+        }
+        $mask = -1 << (32 - (int)$bits);
         $subnet &= $mask; # nb: in case the supplied subnet wasn't correctly aligned
         return ($ip & $mask) == $subnet;
     }

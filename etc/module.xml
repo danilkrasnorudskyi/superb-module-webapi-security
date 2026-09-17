@@ -5,6 +5,7 @@
             <module name="Magento_Webapi"/>
             <module name="Magento_WebapiAsync"/>
             <module name="Magento_GraphQl"/>
+            <module name="Magento_Config"/>
         </sequence>
     </module>
 </config>
