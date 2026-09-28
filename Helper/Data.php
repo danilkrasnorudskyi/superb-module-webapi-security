@@ -31,6 +31,7 @@ class Data
     protected $allowedRestPath;
     protected $whitelists;
     protected $conditinallyAllowedPath;
+    protected $loggedBlocked = [];
     protected $allowedConiditions = [self::IP_CONDITION, self::USER_AGENT_CONDITION];
 
     public function __construct(
@@ -77,16 +78,20 @@ class Data
         $ip = $this->remoteAddress->getRemoteAddress();
         $userAgent = $this->httpHeader->getHttpUserAgent();
         $blocked = false;
+        $served = false;
+        $canMatch = $request instanceof RestRequest && $this->scopeConfig->isSetFlag(self::LOG_BLOCKED_REQUESTS);
         foreach ($routes as $route) {
+            $matches = $canMatch && $route->match($request) !== false;
             if ($this->isPathAllowed($route->getRoutePath(), $httpMethod) ||
                 $this->isPathConditionallyAllowed($route->getRoutePath(), $httpMethod, $ip, $userAgent)
             ) {
                 $newRoutes[] = $route;
-            } elseif (!$blocked && $request instanceof RestRequest && $route->match($request) !== false) {
+                $served = $served || $matches;
+            } elseif ($matches) {
                 $blocked = true;
             }
         }
-        if ($blocked) {
+        if ($blocked && !$served) {
             $this->logBlocked('rest', $httpMethod, $request->getPathInfo());
         }
         return $newRoutes;
@@ -103,6 +108,13 @@ class Data
     {
         if (!$this->scopeConfig->isSetFlag(self::LOG_BLOCKED_REQUESTS)) {
             return;
+        }
+        if ($api === 'rest') {
+            $key = strtoupper((string)$method) . ' ' . $path;
+            if (isset($this->loggedBlocked[$key])) {
+                return;
+            }
+            $this->loggedBlocked[$key] = true;
         }
         $this->logger->warning(
             sprintf('blocked %s %s %s', $api, strtoupper((string)$method), $path),

@@ -44,7 +44,9 @@ The array fields are stored as JSON (`Magento\Config\Model\Config\Backend\Serial
 ## Logging
 
 With **Log Blocked Requests** on, every rejected request (REST path filtered out, disabled SOAP/GraphQL/schema)
-is written to `var/log/superb-webapi-security.log`:
+is written to `var/log/superb-webapi-security.log`, once per request. A REST request counts as rejected only when
+no allowed route serves it — `PUT V1/carts/mine/coupons/X` also matches the filtered admin route
+`V1/carts/:cartId/coupons/:couponCode`, but it is served by the allowed customer route and is not logged:
 
 ```
 [2026-09-17T12:00:00.000000+00:00] webapi_security.WARNING: blocked rest POST /V1/products {"ip":"203.0.113.7","user_agent":"curl/8.4"} []
