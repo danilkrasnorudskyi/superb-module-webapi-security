@@ -8,6 +8,8 @@ use Superb\WebapiSecurity\Block\Adminhtml\System\Config\Form\Renderer\Textarea;
 
 class Whitelists extends AbstractFieldArray
 {
+    use UniqueRowIdsTrait;
+
     const NAME = 'name';
     const VALUES = 'values';
 
