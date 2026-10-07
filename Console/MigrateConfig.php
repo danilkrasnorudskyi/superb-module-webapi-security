@@ -111,7 +111,7 @@ class MigrateConfig extends Command
             }
         }
         if ($rows) {
-            $values[Data::ALLOWED_REST_PATH] = $this->serializeRows($rows);
+            $values[Data::ALLOWED_REST_PATH] = $this->serializeRows($rows, 'allowed');
         }
 
         $rows = [];
@@ -128,7 +128,7 @@ class MigrateConfig extends Command
             ];
         }
         if ($rows) {
-            $values[Data::CONDITIONALLY_ALLOWED_REST_PATH] = $this->serializeRows($rows);
+            $values[Data::CONDITIONALLY_ALLOWED_REST_PATH] = $this->serializeRows($rows, 'conditional');
         }
 
         $rows = [];
@@ -138,7 +138,7 @@ class MigrateConfig extends Command
             }
         }
         if ($rows) {
-            $values[Data::WHITELISTS] = $this->serializeRows($rows);
+            $values[Data::WHITELISTS] = $this->serializeRows($rows, 'whitelist');
         }
 
         return $values;
@@ -158,11 +158,14 @@ class MigrateConfig extends Command
         return implode($glue, $items);
     }
 
-    protected function serializeRows(array $rows)
+    /**
+     * Row keys become DOM ids in the admin dynamic rows, so they must not repeat across fields
+     */
+    protected function serializeRows(array $rows, $field)
     {
         $keyed = [];
         foreach ($rows as $i => $row) {
-            $keyed['row_' . ($i + 1)] = $row;
+            $keyed['_' . $field . '_' . ($i + 1)] = $row;
         }
         return $this->json->serialize($keyed);
     }

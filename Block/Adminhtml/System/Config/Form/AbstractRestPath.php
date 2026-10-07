@@ -10,6 +10,8 @@ use Superb\WebapiSecurity\Block\Adminhtml\System\Config\Form\Renderer\Textarea;
 
 abstract class AbstractRestPath extends AbstractFieldArray
 {
+    use UniqueRowIdsTrait;
+
     const PATH = 'path';
     const METHODS = 'methods';
 
