@@ -305,6 +305,9 @@ class Data
         if ($ip === false || $subnet === false) {
             return false;
         }
+        if (!ctype_digit((string)$bits) || (int)$bits > 32) {
+            return false;
+        }
         $mask = -1 << (32 - (int)$bits);
         $subnet &= $mask; # nb: in case the supplied subnet wasn't correctly aligned
         return ($ip & $mask) == $subnet;
