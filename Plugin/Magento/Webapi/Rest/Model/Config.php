@@ -2,9 +2,9 @@
 
 namespace Superb\WebapiSecurity\Plugin\Magento\Webapi\Rest\Model;
 
-use Superb\WebapiSecurity\Helper\Data;
 use Magento\Framework\Webapi\Rest\Request;
 use Magento\Webapi\Model\Rest\Config as RestConfig;
+use Superb\WebapiSecurity\Helper\Data;
 
 class Config
 {
