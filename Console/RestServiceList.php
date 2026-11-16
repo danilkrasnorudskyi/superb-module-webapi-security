@@ -3,10 +3,11 @@
 namespace Superb\WebapiSecurity\Console;
 
 use Magento\Framework\App\ObjectManager;
+use Magento\Framework\Console\Cli;
 use Magento\Webapi\Model\Config\Converter;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class RestServiceList extends Command
@@ -15,7 +16,7 @@ class RestServiceList extends Command
     const USER_AGENT = 'user-agent';
     const IP = 'ip';
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $filter = $input->getOption(self::FILTER);
         $userAgent = $input->getOption(self::USER_AGENT);
@@ -49,11 +50,11 @@ class RestServiceList extends Command
             $spacer = str_repeat(' ', $strlen - strlen($methods) - 1);
             $output->writeln('<info>' . $methods . $spacer . ' - ' . $route . '</info>');
         }
-        return Command::SUCCESS;
+        return Cli::RETURN_SUCCESS;
     }
 
     /** * {@inheritdoc} */
-    protected function configure()
+    protected function configure(): void
     {
         $options = [
             new InputOption(
@@ -61,21 +62,18 @@ class RestServiceList extends Command
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Filter'
-
             ),
             new InputOption(
                 self::USER_AGENT,
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'User agent'
-
             ),
             new InputOption(
                 self::IP,
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'IP'
-
             ),
         ];
         $this->setName('superb:webapi-security:rest-service-list');

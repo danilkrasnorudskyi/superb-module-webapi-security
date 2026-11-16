@@ -6,6 +6,7 @@ use Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\DeploymentConfig;
+use Magento\Framework\Console\Cli;
 use Magento\Framework\Serialize\Serializer\Json;
 use Superb\WebapiSecurity\Helper\Data;
 use Symfony\Component\Console\Command\Command;
@@ -47,7 +48,7 @@ class MigrateConfig extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('superb:webapi-security:migrate-config');
         $this->setDescription('Copy superb/webapi_security settings from app/etc/env.php into store config');
@@ -58,14 +59,14 @@ class MigrateConfig extends Command
         parent::configure();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $dryRun = $input->getOption(self::DRY_RUN);
         $force = $input->getOption(self::FORCE);
 
         if (!$this->deploymentConfig->get('superb/webapi_security')) {
             $output->writeln('<comment>No superb/webapi_security section found in app/etc/env.php, nothing to migrate.</comment>');
-            return Command::SUCCESS;
+            return Cli::RETURN_SUCCESS;
         }
 
         $values = $this->collectValues();
@@ -88,7 +89,7 @@ class MigrateConfig extends Command
             $output->writeln('<comment>Run "bin/magento cache:clean config" to apply.</comment>');
             $output->writeln('<comment>Remove the "superb" => ["webapi_security" => [...]] block from app/etc/env.php, it is no longer read.</comment>');
         }
-        return Command::SUCCESS;
+        return Cli::RETURN_SUCCESS;
     }
 
     /**
